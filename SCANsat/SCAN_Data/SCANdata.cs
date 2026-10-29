@@ -965,6 +965,42 @@ namespace SCANsat.SCAN_Data
 			}
 		}
 
+		/* DATA: upgrade visual coverage from LoRes to HiRes for high-resolution weather/optical satellites */
+		internal void upgradeVisualCoverage()
+		{
+			short visLo = (short)SCANtype.VisualLoRes;
+			short visHi = (short)SCANtype.VisualHiRes;
+			bool updated = false;
+
+			for (int i = 0; i < 360; i++)
+			{
+				for (int j = 0; j < 180; j++)
+				{
+					if ((coverage[i, j] & visLo) != 0 && (coverage[i, j] & visHi) == 0)
+					{
+						coverage[i, j] |= visHi;
+						updated = true;
+					}
+				}
+			}
+
+			if (updated)
+			{
+				if (SCAN_UI_MainMap.Instance != null && SCAN_UI_MainMap.Instance.IsVisible)
+				{
+					SCAN_UI_MainMap.Instance.resetImages();
+				}
+				if (SCAN_UI_BigMap.Instance != null && SCAN_UI_BigMap.Instance.IsVisible)
+				{
+					SCAN_UI_BigMap.Instance.RefreshMap();
+				}
+				if (SCAN_UI_ZoomMap.Instance != null && SCAN_UI_ZoomMap.Instance.IsVisible)
+				{
+					SCAN_UI_ZoomMap.Instance.RefreshMap();
+				}
+			}
+		}
+
 		/* DATA: reset the map */
 		internal void reset()
 		{

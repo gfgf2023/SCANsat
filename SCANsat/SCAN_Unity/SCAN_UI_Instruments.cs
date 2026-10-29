@@ -196,19 +196,26 @@ namespace SCANsat.SCAN_Unity
 			locationInfo();
 			altInfo();
 			biomeInfo();
+			int resLine = lines;
 			resourceInfo();
 			anomalyInfo();
 			BTDTInfo();
+			weatherInfo();
+			gravityInfo();
+			subsurfaceInfo();
+			oceanInfo();
+			atmosphereInfo();
+			spaceWeatherInfo();
 
 			uiElement.SetAnomalyButtons();
 
-			if (oldLines != lines)
+			if (oldLines != resLine)
 			{
-				oldLines = lines;
+				oldLines = resLine;
 
 				if (ResourceButtons)
 				{
-					uiElement.SetResourceButtons(lines);
+					uiElement.SetResourceButtons(resLine);
 				}
 			}
 
@@ -902,5 +909,141 @@ namespace SCANsat.SCAN_Unity
 				uiElement.SetPosition(SCAN_Settings_Config.Instance.InstrumentsPosition);
 			}
 		}
+	
+		private void weatherInfo()
+		{
+			if (v == null) return;
+			SCANweather weather = v.FindPartModuleImplementing<SCANweather>();
+			if (weather == null) return;
+
+			infoString.AppendLine();
+			infoString.Append("<color=#00e5ff><b>[气象监测 / Meteorology]</b></color>");
+			lines++;
+
+			infoString.AppendLine();
+			infoString.AppendFormat(" 云量: {0:F0}% | 降水: {1:F1} mm/h", weather.currentCloudCover * 100f, weather.currentPrecipRate);
+			lines++;
+
+			infoString.AppendLine();
+			infoString.AppendFormat(" 风场: {0:F1} m/s ({1}) | 气压: {2:F0} hPa", weather.currentWindSpeed, weather.currentWindCardinal, weather.currentMslp);
+			lines++;
+
+			if (weather.currentSst > 0)
+			{
+				infoString.AppendLine();
+				infoString.AppendFormat(" 海温(SST): {0:F1} K ({1:F1}°C) | 辐射: {2:F0} W/m²", weather.currentSst, weather.currentSst - 273.15f, weather.currentOlr);
+				lines++;
+			}
+		}
+
+		private void gravityInfo()
+		{
+			if (v == null) return;
+			SCANgravity grav = v.FindPartModuleImplementing<SCANgravity>();
+			if (grav == null) return;
+
+			infoString.AppendLine();
+			infoString.Append("<color=#ffea00><b>[引力与大地测量 / Gravimetry]</b></color>");
+			lines++;
+
+			infoString.AppendLine();
+			infoString.AppendFormat(" 自由空气重力异常: {0:+0.0;-0.0;0.0} mGal", grav.currentFreeAirMGal);
+			lines++;
+
+			infoString.AppendLine();
+			infoString.AppendFormat(" 布格异常: {0:+0.0;-0.0;0.0} mGal | 重力加速度: {1:F3} m/s²", grav.currentBouguerMGal, grav.currentG);
+			lines++;
+
+			if (!string.IsNullOrEmpty(grav.currentMasconName) && grav.currentMasconName != "无显著异常" && grav.currentMasconName != "None")
+			{
+				infoString.AppendLine();
+				infoString.AppendFormat(" <color=#ff5252>★ 质量密集区(Mascon)警报: {0}</color>", grav.currentMasconName);
+				lines++;
+			}
+		}
+
+		private void subsurfaceInfo()
+		{
+			if (v == null) return;
+			SCANsubsurface sub = v.FindPartModuleImplementing<SCANsubsurface>();
+			if (sub == null) return;
+
+			infoString.AppendLine();
+			infoString.Append("<color=#b388ff><b>[次表层穿透雷达 / Subsurface GPR]</b></color>");
+			lines++;
+
+			infoString.AppendLine();
+			infoString.AppendFormat(" 风化层厚度: {0:F1} m | 基岩埋深: {1:F0} m", sub.regolithThickness, sub.bedrockDepth);
+			lines++;
+
+			infoString.AppendLine();
+			infoString.AppendFormat(" 介电常数: ε = {0:F1}", sub.dielectricConstant);
+			lines++;
+
+			if (!string.IsNullOrEmpty(sub.detectedFeature) && sub.detectedFeature != "连续层理" && sub.detectedFeature != "None")
+			{
+				infoString.AppendLine();
+				infoString.AppendFormat(" <color=#40c4ff>◆ 探明地质构造: {0}</color>", sub.detectedFeature);
+				lines++;
+			}
+		}
+
+		private void oceanInfo()
+		{
+			if (v == null) return;
+			SCANocean ocean = v.FindPartModuleImplementing<SCANocean>();
+			if (ocean == null) return;
+
+			infoString.AppendLine();
+			infoString.Append("<color=#00b0ff><b>[海洋动力与水色 / Oceanography]</b></color>");
+			lines++;
+
+			infoString.AppendLine();
+			infoString.AppendFormat(" 有效波高(SWH): {0:F2} m ({1})", ocean.swh, ocean.seaStateDesc);
+			lines++;
+
+			infoString.AppendLine();
+			infoString.AppendFormat(" 叶绿素-a: {0:F2} mg/m³ | 盐度: {1:F1} PSU", ocean.chlorophyll, ocean.salinity);
+			lines++;
+		}
+
+		private void atmosphereInfo()
+		{
+			if (v == null) return;
+			SCANatmosphere atmo = v.FindPartModuleImplementing<SCANatmosphere>();
+			if (atmo == null) return;
+
+			infoString.AppendLine();
+			infoString.Append("<color=#69f0ae><b>[温室气体与碳汇 / GHG & Carbon]</b></color>");
+			lines++;
+
+			infoString.AppendLine();
+			infoString.AppendFormat(" XCO₂: {0:F1} ppm | XCH₄: {1:F0} ppb", atmo.xco2, atmo.xch4);
+			lines++;
+
+			infoString.AppendLine();
+			infoString.AppendFormat(" 气溶胶厚度(AOD): {0:F3} | 动态: {1}", atmo.aod, atmo.carbonFluxType);
+			lines++;
+		}
+
+		private void spaceWeatherInfo()
+		{
+			if (v == null) return;
+			SCANspaceWeather sw = v.FindPartModuleImplementing<SCANspaceWeather>();
+			if (sw == null) return;
+
+			infoString.AppendLine();
+			infoString.Append("<color=#ff4081><b>[空间天气与磁层 / Space Weather]</b></color>");
+			lines++;
+
+			infoString.AppendLine();
+			infoString.AppendFormat(" 总磁场强度 |B|: {0:F1} nT | TEC: {1:F1} TECU", sw.magneticField_nT, sw.tecUnits);
+			lines++;
+
+			infoString.AppendLine();
+			infoString.AppendFormat(" 质子通量: {0:F1} p/cm²/s | 磁暴等级: {1} ({2})", sw.protonFlux, sw.stormLevelDesc, sw.kpIndexStr);
+			lines++;
+		}
+
 	}
 }

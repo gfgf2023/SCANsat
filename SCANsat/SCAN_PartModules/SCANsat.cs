@@ -141,6 +141,58 @@ namespace SCANsat.SCAN_PartModules
 			}
 			else
 			{
+				if (part != null && part.partInfo != null && part.partInfo.partPrefab != null)
+				{
+					SCANsat prefab = part.partInfo.partPrefab.FindModuleImplementing<SCANsat>();
+					if (prefab != null)
+					{
+						bool changed = false;
+						if (this.sensorType != prefab.sensorType)
+						{
+							Log.Message(string.Format("[SCANsat] Auto-upgrading sensorType for {0} from {1} to prefab {2}", part.partInfo.name, this.sensorType, prefab.sensorType));
+							if (scanning && SCANcontroller.controller != null && this.sensorType > 0)
+							{
+								SCANcontroller.controller.unregisterSensor(vessel, (SCANtype)this.sensorType, fov, min_alt, max_alt, best_alt, requireLight);
+							}
+							this.sensorType = prefab.sensorType;
+							changed = true;
+						}
+						if (this.fov != prefab.fov && !this.allowAltitudeTuning)
+						{
+							this.fov = prefab.fov;
+							changed = true;
+						}
+						if (this.min_alt != prefab.min_alt && !this.allowAltitudeTuning)
+						{
+							this.min_alt = prefab.min_alt;
+							this.best_alt = prefab.best_alt;
+							this.max_alt = prefab.max_alt;
+							this.base_min_alt = prefab.min_alt;
+							this.base_best_alt = prefab.best_alt;
+							this.base_max_alt = prefab.max_alt;
+							changed = true;
+						}
+						if (this.requireLight != prefab.requireLight)
+						{
+							this.requireLight = prefab.requireLight;
+							changed = true;
+						}
+						if (changed && scanning && SCANcontroller.controller != null && this.sensorType > 0)
+						{
+							SCANcontroller.controller.registerSensor(vessel, (SCANtype)this.sensorType, fov, min_alt, max_alt, best_alt, requireLight);
+						}
+					}
+				}
+
+				if ((this.sensorType & (short)SCANtype.VisualHiRes) != 0 && vessel != null && vessel.mainBody != null)
+				{
+					SCANdata data = SCANUtil.getData(vessel.mainBody);
+					if (data != null)
+					{
+						data.upgradeVisualCoverage();
+					}
+				}
+
 				scanType = getTypeString();
 				scanAltitude = getAltString();
 				scanPower = getECString();

@@ -2358,6 +2358,12 @@ namespace SCANsat.SCAN_Unity
 			infoString.AppendLine();
 			SCANuiUtil.toDMS(infoString, lat, lon);
 			infoString.AppendFormat(" (lat: {0}° lon: {1}°)", lat.ToString("F2"), lon.ToString("F2"));
+			if (body.atmosphere && (SCANUtil.isCovered(lon, lat, data, SCANtype.VisualHiRes) || SCANUtil.isCovered(lon, lat, data, SCANtype.VisualLoRes)))
+			{
+				double cloud = SCANsat.SCAN_PartModules.KWPBridge.GetTotalCloudCover(lat, lon, Planetarium.GetUniversalTime());
+				double mslp = SCANsat.SCAN_PartModules.KWPBridge.GetMSLP(lat, lon, Planetarium.GetUniversalTime());
+				infoString.AppendFormat(" [云量: {0:F0}% 气压: {1:F0}hPa]", cloud * 100.0, mslp);
+			}
 
 			double range = ContractDefs.Survey.MaximumTriggerRange;
 
