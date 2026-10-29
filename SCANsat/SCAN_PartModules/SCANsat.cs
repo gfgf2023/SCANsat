@@ -552,7 +552,7 @@ namespace SCANsat.SCAN_PartModules
 					scanInfoPower.guiActive = false;
 				}
 			}
-			else if (alt < best_alt)
+			else if (alt < best_alt * 0.95f)
 			{
 				scanStatus = Localizer.Format("#autoLOC_SCANsat_SubOptimal");
 				scanInfoAltitude.guiActive = true;
@@ -586,7 +586,7 @@ namespace SCANsat.SCAN_PartModules
 				}
 
 			}
-			else if (alt >= best_alt && alt <= max_alt)
+			else if (alt >= best_alt * 0.95f && alt <= max_alt)
 			{
 				scanStatus = Localizer.Format("#autoLOC_SCANsat_Ideal");
 				scanInfoAltitude.guiActive = true;

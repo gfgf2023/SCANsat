@@ -2388,7 +2388,7 @@ namespace SCANsat
 
 				double fov = s.fov;
 				double ba = Math.Min(s.best_alt, soi_radius);
-				if (alt < ba)
+				if (alt < ba * 0.95)
 				{
 					fov = (alt / ba) * fov;
 				}
@@ -3403,7 +3403,7 @@ namespace SCANsat
 				double fov = sensor.fov;
 				double ba = Math.Min(sensor.best_alt, soi_radius);
 
-				if (alt < ba)
+				if (alt < ba * 0.95)
 				{
 					fov = (alt / ba) * fov;
 				}
