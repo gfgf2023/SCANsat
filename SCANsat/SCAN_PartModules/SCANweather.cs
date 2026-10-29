@@ -238,12 +238,23 @@ namespace SCANsat.SCAN_PartModules
 				HighLogic.UISkin
 			);
 		}
+	
+			[KSPEvent(guiActive = true, guiName = "查看气象云图与科学读数", active = true)]
+		public void OpenInstrumentsWindow()
+		{
+			if (global::SCANsat.SCAN_Unity.SCAN_UI_Instruments.Instance != null && !global::SCANsat.SCAN_Unity.SCAN_UI_Instruments.Instance.IsVisible)
+			{
+				global::SCANsat.SCAN_Unity.SCAN_UI_Instruments.Instance.Open();
+			}
+		}
 	}
 
 	/// <summary>
 	/// Dynamic reflection bridge to KerbalWeatherProject (KWP)
 	/// Ensures zero crash risk if KWP is not installed.
 	/// </summary>
+
+
 	public static class KWPBridge
 	{
 		public static bool IsAvailable { get; private set; }
@@ -395,5 +406,7 @@ namespace SCANsat.SCAN_PartModules
 
 			return spd;
 		}
-	}
+	
+
+}
 }

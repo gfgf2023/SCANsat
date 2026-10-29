@@ -145,5 +145,14 @@ namespace SCANsat.SCAN_PartModules
 				HighLogic.UISkin
 			);
 		}
-	}
+	
+		[KSPEvent(guiActive = true, guiName = "查看探地雷达剖面与科学读数", active = true)]
+		public void OpenInstrumentsWindow()
+		{
+			if (global::SCANsat.SCAN_Unity.SCAN_UI_Instruments.Instance != null && !global::SCANsat.SCAN_Unity.SCAN_UI_Instruments.Instance.IsVisible)
+			{
+				global::SCANsat.SCAN_Unity.SCAN_UI_Instruments.Instance.Open();
+			}
+		}
+}
 }

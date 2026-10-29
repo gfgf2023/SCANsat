@@ -32,6 +32,7 @@ namespace SCANsat.SCAN_Unity
 		private bool _isVisible;
 		private bool _mouseInAnomaly;
 		private SCANremoteView _anomalyView;
+		private SCAN_InstrumentView _instrumentView;
 		private SCANtype sensors;
 		private SCANdata data;
 		private SCANanomaly nearest = null;
@@ -224,6 +225,12 @@ namespace SCANsat.SCAN_Unity
 
 		public void OnDestroy()
 		{
+			if (_instrumentView != null)
+			{
+				_instrumentView.Free();
+				_instrumentView = null;
+			}
+
 			if (uiElement != null)
 			{
 				uiElement.gameObject.SetActive(false);
@@ -338,6 +345,11 @@ namespace SCANsat.SCAN_Unity
 		{
 			get
 			{
+				if (_instrumentView != null && _instrumentView.IsActive && _instrumentView.AvailableInstrumentCount > 1)
+				{
+					return true;
+				}
+
 				if (!SCANcontroller.controller.SerenityLoaded)
 				{
 					return false;
@@ -443,6 +455,12 @@ namespace SCANsat.SCAN_Unity
 
 		public void NextAnomaly()
 		{
+			if (_instrumentView != null && _instrumentView.IsActive && _instrumentView.AvailableInstrumentCount > 1)
+			{
+				_instrumentView.NextMode();
+				return;
+			}
+
 			showAnomaly = !showAnomaly;
 		}
 
@@ -732,10 +750,40 @@ namespace SCANsat.SCAN_Unity
 			}
 		}
 
+		private bool showScientificInstrumentView()
+		{
+			if (_instrumentView == null)
+			{
+				_instrumentView = new SCAN_InstrumentView();
+			}
+
+			if (_instrumentView.Update(v))
+			{
+				uiElement.SetDetailState(true);
+				anomalyTex = _instrumentView.GetTexture();
+				uiElement.UpdateAnomaly(anomalyTex);
+				uiElement.UpdateAnomalyName(_instrumentView.GetNameString());
+				uiElement.UpdateAnomalyText(_instrumentView.GetInfoString());
+				return true;
+			}
+
+			return false;
+		}
+
 		private void BTDTInfo()
 		{
 			if ((sensors & SCANtype.AnomalyDetail) == SCANtype.Nothing)
 			{
+				if (showScientificInstrumentView())
+				{
+					if (_anomalyView != null)
+					{
+						_anomalyView.free();
+						_anomalyView = null;
+					}
+					return;
+				}
+
 				uiElement.SetDetailState(false);
 
 				if (_anomalyView != null)
@@ -750,6 +798,16 @@ namespace SCANsat.SCAN_Unity
 
 			if (activeROCCount <= 0 && (nearest == null || !nearest.Detail || nearest.Mod == null))
 			{
+				if (showScientificInstrumentView())
+				{
+					if (_anomalyView != null)
+					{
+						_anomalyView.free();
+						_anomalyView = null;
+					}
+					return;
+				}
+
 				uiElement.SetDetailState(false);
 
 				if (_anomalyView != null)
