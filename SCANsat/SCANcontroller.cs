@@ -2394,9 +2394,10 @@ namespace SCANsat
 				}
 
 				fov *= surfscale;
-				if (fov > 20)
+				double maxAllowedFOV = Math.Max(20.0, s.fov);
+				if (fov > maxAllowedFOV)
 				{
-					fov = 20;
+					fov = maxAllowedFOV;
 				}
 
 				if (fov > maxFOV)
@@ -3413,9 +3414,10 @@ namespace SCANsat
 
 				fov *= surfscale;
 
-				if (fov > 20)
+				double maxAllowedFOV = Math.Max(20.0, sensor.fov);
+				if (fov > maxAllowedFOV)
 				{
-					fov = 20;
+					fov = maxAllowedFOV;
 				}
 
 				int f = (int)Math.Truncate(fov);

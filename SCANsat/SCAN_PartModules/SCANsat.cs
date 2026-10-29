@@ -47,6 +47,23 @@ namespace SCANsat.SCAN_PartModules
 		public bool requireLight;
 		[KSPField]
 		public string animationName;
+
+		[KSPField]
+		public bool allowAltitudeTuning = false;
+
+		[KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "#autoLOC_SCANsat_AltScale")]
+		[UI_FloatRange(minValue = 0.1f, maxValue = 5.0f, stepIncrement = 0.1f, scene = UI_Scene.All)]
+		public float altitudeScale = 1.0f;
+
+		[KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "#autoLOC_SCANsat_AltMode")]
+		[UI_ChooseOption(options = new string[] { "Default", "MinorBody", "MediumBody", "GiantBody", "Auto" }, scene = UI_Scene.All)]
+		public string altitudeMode = "Default";
+
+		private float base_min_alt = -1f;
+		private float base_best_alt = -1f;
+		private float base_max_alt = -1f;
+		private float lastAltitudeScale = -1f;
+		private string lastAltitudeMode = "";
 		//[KSPField(guiName = "SCANsat Altitude", guiActive = false)]
 		//public string alt_indicator;
 		[KSPField(isPersistant = true)]
@@ -99,6 +116,18 @@ namespace SCANsat.SCAN_PartModules
 		/* SAT: KSP entry points */
 		public override void OnStart(StartState state)
 		{
+			if (base_min_alt < 0) base_min_alt = min_alt;
+			if (base_best_alt < 0) base_best_alt = best_alt;
+			if (base_max_alt < 0) base_max_alt = max_alt;
+
+			if (allowAltitudeTuning)
+			{
+				Fields["altitudeScale"].guiActive = true;
+				Fields["altitudeScale"].guiActiveEditor = true;
+				Fields["altitudeMode"].guiActive = true;
+				Fields["altitudeMode"].guiActiveEditor = true;
+				applyAltitudeSettings();
+			}
 			if (state == StartState.Editor)
 			{
 				Log.Message("start: in editor");
@@ -185,6 +214,11 @@ namespace SCANsat.SCAN_PartModules
 			if (sensorType == 0)
 			{
 				return;
+			}
+
+			if (allowAltitudeTuning && (altitudeScale != lastAltitudeScale || altitudeMode != lastAltitudeMode))
+			{
+				applyAltitudeSettings();
 			}
 
 			Events["startScan"].active = !scanning && !powerIsProblem;
@@ -282,7 +316,7 @@ namespace SCANsat.SCAN_PartModules
 
 			if (fov != 0)
 			{
-				sb.Append(Localizer.Format("#autoLOC_SCANsat_FOV", fov.ToString("F1") + "°"));
+				sb.Append(Localizer.Format("#autoLOC_SCANsat_FOV", fov.ToString("F1") + "Â°"));
 			}
 
 			sb.AppendLine();
@@ -530,7 +564,7 @@ namespace SCANsat.SCAN_PartModules
 				{
 					scanInfoFOV.guiActive = true;
 					scanInfoPower.guiActive = true;
-					scanFOV = string.Format("{0}°", CurrentFOV(alt).ToString("N1"));
+					scanFOV = string.Format("{0}Â°", CurrentFOV(alt).ToString("N1"));
 
 					if (requireLight && SCAN_Settings_Config.Instance.DaylightCheck)
 					{
@@ -562,7 +596,7 @@ namespace SCANsat.SCAN_PartModules
 				{
 					scanInfoFOV.guiActive = true;
 					scanInfoPower.guiActive = true;
-					scanFOV = string.Format("{0}°", CurrentFOV(alt).ToString("N1"));
+					scanFOV = string.Format("{0}Â°", CurrentFOV(alt).ToString("N1"));
 					if (requireLight && SCAN_Settings_Config.Instance.DaylightCheck)
 					{
 						scanInfoDaylight.guiActive = true;
@@ -604,6 +638,10 @@ namespace SCANsat.SCAN_PartModules
 
 		private void ChangeSOI(GameEvents.HostedFromToAction<Vessel, CelestialBody> vc)
 		{
+			if (allowAltitudeTuning && altitudeMode == "Auto")
+			{
+				applyAltitudeSettings();
+			}
 			scanAltitude = getAltString();
 		}
 
@@ -734,13 +772,83 @@ namespace SCANsat.SCAN_PartModules
 
 			f = f * (float)(Planetarium.fetch.Home.Radius / vessel.mainBody.Radius);
 
-			if (f > 20)
+			float maxAllowedF = Math.Max(20f, fov);
+			if (f > maxAllowedF)
 			{
-				f = 20;
+				f = maxAllowedF;
 			}
 
 			return f;
 		}
 
-	}
+	
+		public void applyAltitudeSettings()
+		{
+			if (base_min_alt < 0) base_min_alt = min_alt;
+			if (base_best_alt < 0) base_best_alt = best_alt;
+			if (base_max_alt < 0) base_max_alt = max_alt;
+
+			float new_min = base_min_alt;
+			float new_best = base_best_alt;
+			float new_max = base_max_alt;
+
+			if (altitudeMode == "MinorBody")
+			{
+				new_min = Math.Min(base_min_alt, 5000f);
+				new_best = 25000f * altitudeScale;
+				new_max = 80000f * altitudeScale;
+			}
+			else if (altitudeMode == "MediumBody")
+			{
+				new_min = Math.Min(base_min_alt, 20000f);
+				new_best = 150000f * altitudeScale;
+				new_max = 400000f * altitudeScale;
+			}
+			else if (altitudeMode == "GiantBody")
+			{
+				new_min = 200000f;
+				new_best = 1500000f * altitudeScale;
+				new_max = 6000000f * altitudeScale;
+			}
+			else if (altitudeMode == "Auto" && vessel != null && vessel.mainBody != null)
+			{
+				float r = (float)vessel.mainBody.Radius;
+				float soi = (float)(vessel.mainBody.sphereOfInfluence - vessel.mainBody.Radius);
+				new_min = Math.Max(5000f, (float)vessel.mainBody.atmosphereDepth + 5000f);
+				new_best = Math.Min(r * 0.4f * altitudeScale, soi * 0.5f);
+				new_max = Math.Min(r * 1.0f * altitudeScale, soi * 0.9f);
+				if (new_best <= new_min) new_best = new_min * 1.5f;
+				if (new_max <= new_best) new_max = new_best * 2.0f;
+			}
+			else
+			{
+				new_min = base_min_alt * altitudeScale;
+				new_best = base_best_alt * altitudeScale;
+				new_max = base_max_alt * altitudeScale;
+			}
+
+			if (new_min != min_alt || new_best != best_alt || new_max != max_alt)
+			{
+				bool wasScanning = scanning;
+				if (wasScanning)
+				{
+					unregisterScanner();
+				}
+
+				min_alt = new_min;
+				best_alt = new_best;
+				max_alt = new_max;
+
+				if (wasScanning)
+				{
+					registerScanner();
+				}
+
+				scanAltitude = getAltString();
+			}
+
+			lastAltitudeScale = altitudeScale;
+			lastAltitudeMode = altitudeMode;
+		}
+}
 }

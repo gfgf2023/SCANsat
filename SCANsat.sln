@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SCANsat", "SCANsat\SCANsat.csproj", "{10E9EE47-1FA4-485D-8BF9-FD29BC2D813E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SCANsat.Unity", "SCANsat.Unity\SCANsat.Unity.csproj", "{A5954155-0F93-4B37-B212-B0ADAC737831}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SCANmechjeb", "SCANmechjeb\SCANmechjeb.csproj", "{10BD367A-1CB0-436F-A2B5-FAFCB53792CA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{10E9EE47-1FA4-485D-8BF9-FD29BC2D813E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10E9EE47-1FA4-485D-8BF9-FD29BC2D813E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10E9EE47-1FA4-485D-8BF9-FD29BC2D813E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10E9EE47-1FA4-485D-8BF9-FD29BC2D813E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5954155-0F93-4B37-B212-B0ADAC737831}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5954155-0F93-4B37-B212-B0ADAC737831}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5954155-0F93-4B37-B212-B0ADAC737831}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5954155-0F93-4B37-B212-B0ADAC737831}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10BD367A-1CB0-436F-A2B5-FAFCB53792CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10BD367A-1CB0-436F-A2B5-FAFCB53792CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10BD367A-1CB0-436F-A2B5-FAFCB53792CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10BD367A-1CB0-436F-A2B5-FAFCB53792CA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

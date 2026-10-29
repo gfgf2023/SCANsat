@@ -20,7 +20,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $root    = Split-Path -Parent $MyInvocation.MyCommand.Path
-$sln     = Join-Path $root "SCANsat.slnx"
+$sln     = if (Test-Path (Join-Path $root "SCANsat.sln")) { Join-Path $root "SCANsat.sln" } else { Join-Path $root "SCANsat.slnx" }
 $built   = Join-Path $root "GameData\SCANsat\Plugins"   # KSPBuildTools writes every project's DLL here
 $verFile = Join-Path $root "GameData\SCANsat\SCANsat.version"
 
